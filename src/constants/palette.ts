@@ -1,0 +1,17 @@
+export const colors = {
+  background: '#F5F8F2',
+  green: '#347653',
+  greenDark: '#234D36',
+  text: '#24372A',
+  muted: '#647568',
+  mutedSoft: '#788579',
+  placeholder: '#89958B',
+  border: '#DCE5DA',
+  white: '#FFFFFF',
+  danger: '#9B3A32',
+  warning: '#8A5A12',
+  protein: '#2F6F4E',
+  carbs: '#C4962C',
+  fat: '#C46B4A',
+  track: '#E4EDE6',
+};
