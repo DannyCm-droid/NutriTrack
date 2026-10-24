@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // En Firebase Console activa Authentication con correo y contraseña, y Cloud Firestore.
 // Copia firestore.rules en las reglas de la base de datos para que cada usuario solo vea sus datos.
 
+// Datos públicos del proyecto. Sirven para conectar la app con Firebase.
+// No son la contraseña del usuario. Los valores no se repiten en los comentarios.
 const firebaseConfig = {
   apiKey: 'AIzaSyCsZvYRZ2nzJOWSd0_CwpS79MpODnjgMDI',
   authDomain: 'nutritrack-93d74.firebaseapp.com',
@@ -16,8 +18,11 @@ const firebaseConfig = {
   appId: '1:20391222228:web:c705acbe2436db7bd75441',
 };
 
+// Si el módulo se vuelve a cargar, Firebase ya tiene una app. Se reutiliza en vez de crear otra.
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
+// En la web la sesión la guarda el navegador. En el celular se guarda con AsyncStorage,
+// para que siga iniciada al cerrar la app.
 function createAuth(firebaseApp: FirebaseApp): Auth {
   if (Platform.OS === 'web') {
     return getAuth(firebaseApp);
@@ -53,9 +58,11 @@ function createAuth(firebaseApp: FirebaseApp): Auth {
   }
 }
 
+// auth se usa para entrar y registrarse. db es la base Firestore.
 export const auth = createAuth(app);
 export const db = getFirestore(app);
 
+// Los errores de Auth traen un código que empieza por "auth/". Si no lo traen, devolvemos texto vacío.
 function authErrorCode(error: unknown) {
   if (typeof error === 'object' && error !== null && 'code' in error) {
     const code = error.code;
@@ -64,6 +71,7 @@ function authErrorCode(error: unknown) {
   return '';
 }
 
+// Traduce ese código a una frase en español. El default cubre cualquier código no listado.
 export function authErrorMessage(error: unknown) {
   switch (authErrorCode(error)) {
     case 'auth/invalid-credential':
@@ -109,6 +117,7 @@ export function authErrorMessage(error: unknown) {
   }
 }
 
+// Frase fija para cuando una escritura en Firestore falla.
 export function saveErrorMessage() {
   return 'No se pudo guardar. Revisa tu conexión y que Firestore permita escribir los datos de tu usuario.';
 }

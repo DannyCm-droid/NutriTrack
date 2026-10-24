@@ -12,12 +12,16 @@ import type { Meal } from '@/types/models';
 export default function MealsScreen() {
   const { user } = useAuth();
   const { items, loading, error } = useMeals();
+  // openId es la comida desplegada. Solo hay una. null deja todas cerradas.
   const [openId, setOpenId] = useState<string | null>(null);
 
+  // La pantalla de carga solo cubre la primera espera, cuando todavía no hay comidas.
   if (loading && items.length === 0) return <LoadingScreen />;
 
   const sections = groupMeals(items);
 
+  // Pide confirmación y borra esa comida en Firestore.
+  // Si falla, avisa. Esta pantalla no modifica la lista: useMeals la actualiza al escuchar el cambio.
   function confirmDelete(meal: Meal) {
     if (!user) return;
     Alert.alert('Eliminar comida', 'Esta comida se quitará de tu historial.', [
@@ -54,6 +58,8 @@ export default function MealsScreen() {
         }
         renderSectionHeader={({ section }) => <Text style={styles.day}>{section.title}</Text>}
         renderItem={({ item }) => {
+          // Al tocar la tarjeta se abre o se cierra.
+          // Si recognized es false, el alimento muestra que hay que revisar ese valor.
           const open = openId === item.id;
           return (
             <View style={styles.card}>
@@ -98,6 +104,8 @@ export default function MealsScreen() {
   );
 }
 
+// Recorre la lista en el orden en que llega. Si el día coincide con la sección anterior, la agrega ahí.
+// Si no, abre otra sección. formatDay escribe Hoy, Ayer o la fecha.
 function groupMeals(meals: Meal[]) {
   const sections: { title: string; data: Meal[] }[] = [];
   for (const meal of meals) {

@@ -7,6 +7,9 @@ import { daysUntil, isIsoDate } from '@/lib/format';
 import { dailyTargets, goalSummary } from '@/lib/nutrition';
 import { ACTIVITY_LEVELS, type ActivityLevel, type Sex, type UserProfile } from '@/types/models';
 
+// El mismo formulario sirve para crear el perfil y para editarlo.
+// initial rellena los campos. email llega de la cuenta y aquí no se teclea.
+// submitLabel es el texto del botón. onSubmit es la función con la que el padre guarda.
 type ProfileFormProps = {
   initial?: Partial<UserProfile>;
   email: string;
@@ -15,6 +18,8 @@ type ProfileFormProps = {
 };
 
 export function ProfileForm({ initial, email, submitLabel, onSubmit }: ProfileFormProps) {
+  // Los números también se guardan como texto, para que el teclado pueda editarlos.
+  // saving impide enviar otra vez mientras onSubmit no termina.
   const [name, setName] = useState(initial?.name ?? '');
   const [sex, setSex] = useState<Sex | ''>(initial?.sex ?? '');
   const [age, setAge] = useState(initial?.age ? String(initial.age) : '');
@@ -27,6 +32,8 @@ export function ProfileForm({ initial, email, submitLabel, onSubmit }: ProfileFo
   const [deadline, setDeadline] = useState(initial?.goalDeadline ?? '');
   const [saving, setSaving] = useState(false);
 
+  // useMemo vuelve a armar la vista previa solo cuando cambia un dato del formulario.
+  // Si buildProfile devuelve null, la tarjeta de la meta no se dibuja.
   const preview = useMemo(() => {
     const profile = buildProfile({
       name,
@@ -44,6 +51,9 @@ export function ProfileForm({ initial, email, submitLabel, onSubmit }: ProfileFo
     return { profile, targets, summary: goalSummary(profile, targets) };
   }, [activity, age, deadline, email, goalWeight, height, name, sex, weight]);
 
+  // Si la validación deja un mensaje, muestra la alerta y no llama al padre.
+  // Si pasa, pone updatedAt con la hora actual y espera a onSubmit.
+  // catch avisa con un texto fijo. finally siempre apaga saving.
   async function handleSubmit() {
     const profile = preview?.profile ?? null;
     const message = validationMessage({
@@ -179,6 +189,8 @@ function Choice({
   );
 }
 
+// Devuelve el primer error, o null si todos los datos caben en su rango.
+// La fecha tiene que existir y ser posterior a hoy.
 function validationMessage(input: FormInput) {
   if (input.name.trim().length < 2) return 'Escribe tu nombre.';
   if (!input.sex) return 'Selecciona el sexo para estimar las calorías.';
@@ -212,6 +224,7 @@ type FormInput = {
   deadline: string;
 };
 
+// Arma el objeto del perfil solo cuando validationMessage no encontró errores.
 function buildProfile(input: FormInput): UserProfile | null {
   if (validationMessage(input)) return null;
   if (!input.sex || !input.activity) return null;
@@ -230,6 +243,7 @@ function buildProfile(input: FormInput): UserProfile | null {
   };
 }
 
+// Pasa el texto a número y acepta coma o punto. Si el resultado no es finito, devuelve null.
 function readNumber(value: string) {
   const number = Number(value.replace(',', '.').trim());
   return Number.isFinite(number) ? number : null;

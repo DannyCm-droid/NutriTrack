@@ -16,6 +16,8 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Valida en el teléfono antes de llamar a Firebase.
+  // La contraseña no se recorta: un espacio cuenta como parte de ella.
   async function handleRegister() {
     const normalizedEmail = email.trim();
     if (!name.trim() || !normalizedEmail || !password || !confirmPassword) {
@@ -33,6 +35,8 @@ export default function RegisterScreen() {
       return;
     }
 
+    // await espera a Firebase. Si createUserWithEmailAndPassword falla, la cuenta no se creó.
+    // El try de dentro solo guarda el nombre. Si ese paso falla, la sesión ya existe.
     try {
       setLoading(true);
       const credential = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
@@ -52,6 +56,7 @@ export default function RegisterScreen() {
     }
   }
 
+  // Igual que en login: con sesión activa se sale de esta pantalla hacia /.
   if (initializing) return <LoadingScreen />;
   if (user) return <Redirect href="/" />;
 

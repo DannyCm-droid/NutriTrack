@@ -14,6 +14,9 @@ export default function HomeScreen() {
 
   if (!profile) return <LoadingScreen />;
 
+  // targets es la meta del día. todayMeals toma las comidas desde la medianoche local.
+  // sumMacros suma sus calorías y macronutrientes.
+  // Si lo consumido pasa la meta, la barra usa el color danger.
   const targets = dailyTargets(profile);
   const todayMeals = meals.filter((meal) => meal.eatenAt >= startOfDay());
   const today = sumMacros(todayMeals);
@@ -87,6 +90,7 @@ export default function HomeScreen() {
   );
 }
 
+// Una tarjeta por macronutriente: lo consumido hoy contra la meta, más su barra.
 function MacroCard({
   label,
   value,

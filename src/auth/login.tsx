@@ -9,11 +9,14 @@ import { useAuth } from '@/context/auth-context';
 import { auth, authErrorMessage } from '@/services/firebase';
 
 export default function LoginScreen() {
+  // email y password son lo que escribe la persona. loading evita enviar el formulario dos veces.
   const { user, initializing } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // async permite usar await. Solo se quitan espacios del correo; la contraseña se envía tal cual.
+  // try intenta el acceso. catch muestra el error de Firebase. finally siempre apaga loading.
   async function handleLogin() {
     const normalizedEmail = email.trim();
     if (!normalizedEmail || !password) {
@@ -31,6 +34,7 @@ export default function LoginScreen() {
     }
   }
 
+  // Cuando Auth confirma la sesión, user deja de ser null y esta pantalla manda a /.
   if (initializing) return <LoadingScreen />;
   if (user) return <Redirect href="/" />;
 

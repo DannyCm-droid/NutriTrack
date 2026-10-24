@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 
 import { colors } from '@/constants/palette';
 
+// Al entrar a las pestañas, la primera que se abre es home.tsx.
 export const unstable_settings = {
   initialRouteName: 'home',
 };
@@ -24,6 +25,7 @@ export default function TabsLayout() {
         },
       }}
     >
+      {/* name coincide con el archivo: home.tsx, meals.tsx, progress.tsx y profile.tsx. */}
       <Tabs.Screen
         name="home"
         options={{

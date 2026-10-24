@@ -13,10 +13,15 @@ import type { UserProfile } from '@/types/models';
 export default function OnboardingScreen() {
   const { user, profile, initializing, profileLoading } = useAuth();
 
+  // Esta pantalla se queda solo si hay sesión y todavía no existe un perfil.
+  // Mientras Auth o Firestore responden, se muestra la carga.
+  // Sin sesión vuelve a /. Si el perfil ya llegó, entra a /home.
   if (initializing || profileLoading) return <LoadingScreen />;
   if (!user) return <Redirect href="/" />;
   if (profile) return <Redirect href="/home" />;
 
+  // Guarda el perfil con el correo de la cuenta.
+  // El true final pide que saveProfile también registre el peso inicial.
   async function handleSubmit(next: UserProfile) {
     if (!user) return;
     await saveProfile(user.uid, { ...next, email: user.email ?? next.email }, true);
@@ -28,6 +33,7 @@ export default function OnboardingScreen() {
       <Text style={styles.subtitle}>
         Con estos datos estimamos tus calorías y macronutrientes diarios. Puedes editarlos después.
       </Text>
+      {/* initial solo trae el nombre de la cuenta. El botón y el guardado los decide esta pantalla. */}
       <ProfileForm
         email={user.email ?? ''}
         initial={{ name: user.displayName ?? '' }}

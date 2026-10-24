@@ -15,6 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '@/constants/palette';
 
+// Datos que recibe Screen. children es lo que va dentro de la pantalla.
+// scroll permite bajar. keyboard aparta el contenido cuando se abre el teclado.
+// centered lo pone al centro. edges elige qué bordes respetan la zona del teléfono.
 type ScreenProps = {
   children: ReactNode;
   scroll?: boolean;
@@ -23,6 +26,9 @@ type ScreenProps = {
   edges?: ('top' | 'bottom' | 'left' | 'right')[];
 };
 
+// Si scroll es true, el contenido se puede deslizar. Si es false, queda fijo.
+// keyboardShouldPersistTaps handled deja tocar botones aunque el teclado siga abierto.
+// En iPhone el teclado empuja la pantalla. En Android este ajuste no se aplica.
 export function Screen({
   children,
   scroll = false,
@@ -60,6 +66,7 @@ export function Screen({
   );
 }
 
+// Círculo de espera en el centro. Las pantallas lo usan mientras llegan la sesión o los datos.
 export function LoadingScreen() {
   return (
     <View style={styles.loading}>
@@ -79,6 +86,9 @@ type FieldProps = {
   multiline?: boolean;
 };
 
+// Campo con su etiqueta. value y onChangeText los controla la pantalla que lo usa.
+// secureTextEntry oculta lo que se escribe, como una contraseña.
+// multiline agranda el campo para una descripción. La corrección automática está apagada.
 export function Field({
   label,
   value,
@@ -117,6 +127,9 @@ type ButtonProps = {
   variant?: 'primary' | 'secondary' | 'danger';
 };
 
+// Botón. Si loading o disabled están activos, no se puede pulsar.
+// Mientras carga, muestra un círculo en lugar del texto.
+// primary es verde, secondary es blanco y danger es rojo.
 export function Button({
   label,
   onPress,
@@ -150,10 +163,13 @@ export function Button({
   );
 }
 
+// Caja blanca para agrupar un bloque, como una comida o un resumen.
 export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
+// Barra de avance. value es lo que llevas y max es la meta.
+// Nunca pasa del ancho completo. Si max es cero o negativo, la barra queda vacía.
 export function ProgressBar({
   value,
   max,

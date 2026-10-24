@@ -17,12 +17,18 @@ export default function ProgressScreen() {
   if (!profile || !user) return <LoadingScreen />;
 
   const uid = user.uid;
+  // difference es el objetivo menos el peso del perfil, sin redondear.
+  // Si esa diferencia es menor a 0.3 kg, se muestra como peso alcanzado.
+  // Si no, un valor negativo pide bajar y uno positivo, subir.
   const difference = profile.goalWeightKg - profile.weightKg;
   const weightStatus =
     Math.abs(difference) < 0.3
       ? 'Estás en tu peso objetivo.'
       : `Necesitas ${difference < 0 ? 'bajar' : 'subir'} ${formatMacro(Math.abs(difference))} kg para llegar a ${formatMacro(profile.goalWeightKg)} kg.`;
 
+  // Acepta coma o punto y solo guarda un peso entre 30 y 300 kg.
+  // logWeight crea el registro y actualiza el peso del perfil.
+  // Después el campo se vacía. Las barras cambian cuando useWeights recibe el documento nuevo.
   async function handleSave() {
     const value = Number(weight.replace(',', '.'));
     if (!Number.isFinite(value) || value < 30 || value > 300) {
@@ -41,6 +47,8 @@ export default function ProgressScreen() {
     }
   }
 
+  // Copia la lista para no reordenarla en el hook. Va de la más antigua a la más nueva
+  // y se queda con las últimas 8, que son las más recientes.
   const recent = [...weights.items].sort((a, b) => a.recordedAt - b.recordedAt).slice(-8);
 
   return (
@@ -82,6 +90,8 @@ export default function ProgressScreen() {
   );
 }
 
+// La altura sale de cuánto pesa cada registro respecto al más bajo del grupo.
+// span vale al menos 1 para no dividir entre cero cuando todos los pesos son iguales.
 function WeightBars({
   entries,
 }: {

@@ -5,6 +5,8 @@ import { LoadingScreen, Screen } from '@/components/ui';
 import { useAuth } from '@/context/auth-context';
 import { colors } from '@/constants/palette';
 
+// Primera pantalla. Según la sesión, espera, manda a crear el perfil o entra a Inicio.
+// Si no hay usuario, se queda aqui y ofrece crear cuenta o iniciar sesion.
 export default function WelcomeScreen() {
   const { user, profile, initializing, profileLoading } = useAuth();
 
@@ -28,6 +30,7 @@ export default function WelcomeScreen() {
           </Text>
         </View>
 
+        {/* router.push abre la ruta sin borrar esta pantalla, así se puede volver atrás. */}
         <Pressable style={styles.button} onPress={() => router.push('/register')}>
           <Text style={styles.buttonText}>Crear cuenta</Text>
         </Pressable>

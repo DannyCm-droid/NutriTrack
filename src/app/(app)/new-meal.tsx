@@ -10,6 +10,10 @@ import { interpretMealWithGemini, type GeminiFailure } from '@/services/gemini-m
 import { saveMeal } from '@/services/user-data';
 import type { MealItem } from '@/types/models';
 
+// Copia de un alimento que la persona puede editar.
+// Los números van como texto para escribirlos en el teclado.
+// key distingue cada tarjeta. grams conserva los gramos de la estimación.
+// recognized se guarda con el alimento. Aquí la estimación y el alta manual lo dejan en true.
 type DraftItem = {
   key: string;
   name: string;
@@ -24,6 +28,10 @@ type DraftItem = {
 
 export default function NewMealScreen() {
   const { user } = useAuth();
+  // description es lo que la persona escribió. items son los alimentos de la pantalla.
+  // reviewed pasa a true después del primer intento, aunque Gemini falle.
+  // Así se puede escribir los alimentos a mano. notice es el aviso de éxito o de error.
+  // interpreting y saving impiden mandar la misma acción dos veces.
   const [description, setDescription] = useState('');
   const [items, setItems] = useState<DraftItem[]>([]);
   const [reviewed, setReviewed] = useState(false);
@@ -31,6 +39,10 @@ export default function NewMealScreen() {
   const [interpreting, setInterpreting] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Quita espacios y pide al menos 3 caracteres.
+  // await espera a Gemini. Si falla, muestra el error y no borra los alimentos que ya estaban.
+  // Si responde bien, cambia toda la lista por la estimación nueva.
+  // finally siempre apaga interpreting, haya salido bien o mal.
   async function interpret() {
     const text = description.trim();
     if (text.length < 3) {
@@ -58,10 +70,17 @@ export default function NewMealScreen() {
     }
   }
 
+  // Cambia solo el alimento con esa key. Los demás quedan igual.
   function updateItem(key: string, patch: Partial<DraftItem>) {
     setItems((current) => current.map((item) => (item.key === key ? { ...item, ...patch } : item)));
   }
 
+  // Sin sesión no guarda. Si un alimento no tiene nombre o tiene un número inválido, no guarda ninguno.
+  // Una lista vacía también se rechaza. Las calorías guardadas son la suma redondeada.
+  // Proteína, carbohidratos y grasa se guardan con la suma tal cual.
+  // eatenAt es la hora del guardado, en milisegundos.
+  // router.replace abre Inicio y esta pantalla no queda detrás para volver con atrás.
+  // Si Firestore falla, avisa. finally siempre apaga saving.
   async function save() {
     if (!user) return;
     const parsed = items.map(parseDraft);
@@ -95,6 +114,8 @@ export default function NewMealScreen() {
     }
   }
 
+  // Este total es solo para mostrar. Un campo vacío cuenta como cero aquí.
+  // Al guardar, un campo vacío sí se rechaza.
   const totals = sumMacros(
     items.map((item) => ({
       calories: readNumber(item.calories) ?? 0,
@@ -103,6 +124,10 @@ export default function NewMealScreen() {
       fat: readNumber(item.fat) ?? 0,
     })),
   );
+  // La descripción y el botón de interpretar siempre se ven.
+  // Los alimentos, el total y guardar solo aparecen cuando reviewed es true.
+  // El texto de estimación se oculta si el último aviso es un error.
+  // Si un nuevo intento falla, las tarjetas anteriores siguen en pantalla.
   return (
     <Screen scroll keyboard edges={['bottom']}>
       <Text style={styles.lead}>
@@ -215,6 +240,7 @@ export default function NewMealScreen() {
   );
 }
 
+// Campo corto para un número. La pantalla recibe el texto y decide qué alimento actualizar.
 function NumberField({
   label,
   value,
@@ -239,6 +265,8 @@ function NumberField({
   );
 }
 
+// Pasa un alimento de Gemini a textos editables.
+// La key mezcla el nombre, los gramos y un texto aleatorio para que dos alimentos parecidos no se confundan.
 function toDraft(item: MealItem): DraftItem {
   return {
     key: `${item.name}-${item.grams}-${Math.random().toString(36).slice(2)}`,
@@ -253,6 +281,9 @@ function toDraft(item: MealItem): DraftItem {
   };
 }
 
+// Prepara un alimento para guardarlo. Si el nombre está vacío o un número no sirve, devuelve null.
+// Si no hay frase de cantidad, usa la palabra Porción.
+// Los gramos no se recalculan. Un alimento escrito a mano puede quedar con cero gramos.
 function parseDraft(item: DraftItem): MealItem | null {
   const calories = readNumber(item.calories);
   const protein = readNumber(item.protein);
@@ -274,6 +305,8 @@ function parseDraft(item: DraftItem): MealItem | null {
   };
 }
 
+// Un texto vacío no vale y devuelve null. Acepta coma o punto.
+// Rechaza lo que no sea un número finito o sea negativo. El cero sí vale.
 function readNumber(value: string) {
   if (!value.trim()) return null;
   const number = Number(value.replace(',', '.'));
@@ -281,6 +314,8 @@ function readNumber(value: string) {
   return number;
 }
 
+// Convierte el motivo del fallo en una frase. Siempre dice que se puede intentar otra vez
+// o escribir los alimentos a mano.
 function geminiFailureNote(failure: GeminiFailure) {
   const retry = 'Puedes volver a interpretar o agregar los alimentos a mano.';
   switch (failure.reason) {
@@ -297,6 +332,7 @@ function geminiFailureNote(failure: GeminiFailure) {
   }
 }
 
+// Muestra un total con un decimal como máximo, en el formato de números de México.
 function format(value: number) {
   return value.toLocaleString('es-MX', { maximumFractionDigits: 1 });
 }

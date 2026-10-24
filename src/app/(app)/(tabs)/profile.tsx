@@ -14,12 +14,16 @@ import type { UserProfile } from '@/types/models';
 
 export default function ProfileScreen() {
   const { user, profile } = useAuth();
+  // editing alterna entre el resumen y el formulario.
   const [editing, setEditing] = useState(false);
 
   if (!profile || !user) return <LoadingScreen />;
 
   const targets = dailyTargets(profile);
 
+  // weightChanged es true solo si el peso nuevo es distinto al guardado.
+  // saveProfile usa ese valor para decidir si también agrega un registro de peso.
+  // El correo que se escribe es el de la cuenta.
   async function handleSave(next: UserProfile) {
     const weightChanged = next.weightKg !== profile?.weightKg;
     await saveProfile(user!.uid, { ...next, email: user?.email ?? next.email }, weightChanged);
@@ -37,6 +41,7 @@ export default function ProfileScreen() {
     return (
       <Screen scroll keyboard edges={['top', 'bottom']}>
         <Text style={styles.title}>Editar perfil</Text>
+        {/* El mismo formulario del onboarding. initial trae el perfil que ya está guardado. */}
         <ProfileForm
           initial={profile}
           email={user.email ?? profile.email}
